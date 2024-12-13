@@ -10,6 +10,7 @@ import lib.read_write_file as io
 from lib.local_path import SRC_ENCRYPTED_
 from lib.local_path import SRC_DECRYPTED_
 from lib.encryption_mode.cbc import decrypt_cbc
+from lib.encryption_mode.cbc import encrypt_cbc
 
 def process_file(file_path, output_path, key, iv):
     sdes = s.SDes()
@@ -26,6 +27,12 @@ def process_file(file_path, output_path, key, iv):
     
     io.write_data_1byte(output_path, decrypted_body)
 
+    # зашифруем в режиме CBC
+    def encrypt_sdec(ch):
+        return sdes.encrypt_block(ch, sdes.k1)
+    
+    encrypted_body = encrypt_cbc(decrypted_body[50:], encrypt_sdec, iv)
+    io.write_data_1byte(SRC_DECRYPTED_('aa2_sdes_c_cbc_encrypt_out.bmp'), decrypted_body[:50] + encrypted_body)
 
 key = 845
 iv = 56
