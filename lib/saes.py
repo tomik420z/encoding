@@ -332,26 +332,73 @@ class AES():
         self.state_matrix[1][0] = self.state_matrix[1][1]
         self.state_matrix[1][1] = a
 
+    @staticmethod
+    def gf_divide(a, b):
+        # деление полинома на полином
+        # результат: частное, остаток (полиномы)
+        dividend = a # делимое
+        divisor = b # делитель
+        a = 0
+        # бит в делимом
+        m = len(bin(dividend))-2
+        # бит в делителе
+        n = len(bin(divisor))-2
+        s = divisor << m
+        msb = 2 ** (m + n - 1)
+        for i in range(m):
+            dividend <<= 1
+            if dividend & msb > 0:
+                dividend ^= s
+                dividend ^= 1
+        maskq = 2**m - 1
+        maskr = 2**n - 1
+        r = (dividend >> m) & maskr
+        q = dividend & maskq
+        return q, r
 
 
-    # def decrypt(self, ciphertext, k0, k1, k2):
-    #     """
-    #     Алгоритм расшифрования блока с заданными раундовыми ключами
-    #     """
-
-
-    # def encrypt_data(self, data, key):
-    #     """
-    #     шифрование 8-битовых чисел в data на ключе key
-    #     """
-    #     k0, k1, k2 = self.key_expansion(key)
-    #     pass
+    @staticmethod
+    def gf_mi(b, m, n):
+        """Находит обратный элемент x в GF(2^4) по модулю m."""
+        a1, a2, a3 = 1, 0, m
+        b1, b2, b3 = 0, 1, b
+        
+        while b3 != 1:
+            q, r = AES.gf_divide(a3, b3)
+            t1, t2, t3 = a1 + AES.gf_multiply_modular(q, b1, m, n), a2 + AES.gf_multiply_modular(q, b2, m, n), r
+            a1, a2, a3 = b1, b2, b3
+            b1, b2, b3 = t1, t2, t3
+        return b2
     
 
-    # def decrypt_data(self, data, key):
-    #     """
-    #     шифрование 8-битовых чисел в data на ключе key
-    #     """
-    #     k0, k1, k2 = self.key_expansion(key)
-    #     pass
-    
+    @staticmethod
+    def inverse_matrix_2x2(matrix, m, n):
+        """Находит обратную матрицу размерности 2x2 в поле GF(2^4)."""
+        a, b = matrix[0]
+        c, d = matrix[1]
+        
+        # Находим детерминант
+        det = AES.gf_multiply_modular(a, d, m, n) ^ AES.gf_multiply_modular(b, c, m, n)
+
+        # Проверка на обратимость
+        det_inv = AES.gf_mi(det, m, n)
+
+        # Вычисление элементов обратной матрицы
+        a_inv = AES.gf_multiply_modular(
+            d, det_inv, m, n
+        )
+        
+        b_inv = AES.gf_multiply_modular(
+            AES.gf_multiply_modular(b, det_inv, m, n) ^ (0b0), 1, m, n
+        )
+        
+        c_inv = AES.gf_multiply_modular(
+            AES.gf_multiply_modular(c, det_inv, m, n) ^ (0b0), 1, m, n
+        )
+        
+        d_inv = AES.gf_multiply_modular(
+            a, det_inv, m, n
+        )
+
+        return [[a_inv, b_inv], [c_inv, d_inv]]
+

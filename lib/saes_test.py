@@ -2,32 +2,29 @@ import unittest
 from saes import AES
 
 class TestAES(unittest.TestCase):
-    def setUp(self):
-        self.key = 0b1010011100111011
-        self.aes = AES(self.key)
-
-
-    def test_key_gen(self):        
-        self.assertEqual(self.aes.k0, 0b1010011100111011)
-        self.assertEqual(self.aes.k1, 0b0001110000100111)
-        self.assertEqual(self.aes.k2, 0b0111011001010001)
     
-
     def test_matrix(self):
-        self.aes.to_state_matrix(0b0110111101101011)
-        self.assertEqual(self.aes.state_matrix, [[0x6, 0x6], [0xf, 0xb]])
+        key = 0b1010011100111011
+        aes = AES(key)
+
+        self.assertEqual(aes.k0, 0b1010011100111011)
+        self.assertEqual(aes.k1, 0b0001110000100111)
+        self.assertEqual(aes.k2, 0b0111011001010001)
+
+        aes.to_state_matrix(0b0110111101101011)
+        self.assertEqual(aes.state_matrix, [[0x6, 0x6], [0xf, 0xb]])
         
-        self.aes.add_round_key(self.key)
-        self.assertEqual(self.aes.state_matrix, [[0xc, 0x5], [0x8, 0x0]])
+        aes.add_round_key(key)
+        self.assertEqual(aes.state_matrix, [[0xc, 0x5], [0x8, 0x0]])
 
-        self.aes.nibble_substitution()
-        self.assertEqual(self.aes.state_matrix, [[0xc, 0x1], [0x6, 0x9]])
+        aes.nibble_substitution()
+        self.assertEqual(aes.state_matrix, [[0xc, 0x1], [0x6, 0x9]])
 
-        self.aes.shift_row()
-        self.assertEqual(self.aes.state_matrix,[[0xc,0x1],[0x9, 0x6]])
+        aes.shift_row()
+        self.assertEqual(aes.state_matrix,[[0xc,0x1],[0x9, 0x6]])
 
-        self.aes.mix_columns()
-        self.assertEqual(self.aes.state_matrix, [[0xe,0xa],[0xc, 0x2]])
+        aes.mix_columns()
+        self.assertEqual(aes.state_matrix, [[0xe,0xa],[0xc, 0x2]])
         
 
     def test_encrypt(self):
@@ -70,6 +67,28 @@ class TestAES(unittest.TestCase):
         aes.to_state_matrix(ciphertext)
         self.assertEqual(aes.state_matrix, [[0x0, 0x3],[0x7, 0x8]])
         self.assertEqual(aes.decrypt(ciphertext), plaintext)
+
+
+    def test_multiply_polynom(self):
+        n = 4
+        a = 0b11
+        m = 0b10011
+        inv_a = AES.gf_mi(a, m, n)
+        self.assertEqual(inv_a, 0b1110)
+        product = AES.gf_multiply_modular(a, inv_a, m, n)
+        self.assertEqual(product, 1)
+
+    def test_inverse_matrix(self):
+        n = 4
+        mx = [
+            [1, 4], 
+            [4, 1],
+        ]
+        m = 0b10011
+        inv_mx = AES.inverse_matrix_2x2(mx, m, n)
+        self.assertEqual(inv_mx, [[9, 2],[2, 9]])
+
+
 
 
 if __name__ == '__main__':
