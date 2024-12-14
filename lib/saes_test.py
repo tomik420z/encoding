@@ -1,4 +1,9 @@
 import unittest
+from local_path import SRC_DECRYPTED_
+from local_path import SRC_ENCRYPTED_
+import read_write_file as io
+from util import numeric_matrix_to_str_mx
+
 from saes import AES
 
 class TestAES(unittest.TestCase):
@@ -88,6 +93,38 @@ class TestAES(unittest.TestCase):
         inv_mx = AES.inverse_matrix_2x2(mx, m, n)
         self.assertEqual(inv_mx, [[9, 2],[2, 9]])
 
+
+    def test_mult_matrix(self):
+        n = 4
+        mx = [[0xb, 0x4],[0xe, 0xd]]
+        m = 0b10011
+        inv_mx = AES.inverse_matrix_2x2(mx, m, n)
+        product = AES.matrix_multiply(mx, inv_mx, m, n)
+        
+        self.assertEqual(product, [[1,0],[0,1]])
+
+        mx = [[0xa, 0xc],[0x8, 0x6]]
+        inv_mx = AES.inverse_matrix_2x2(mx, m, n)
+        product = AES.matrix_multiply(mx, inv_mx, m, n)
+        
+        self.assertEqual(product, [[1,0],[0,1]])
+
+
+    def test_decrypt_image(self):
+        decrypted_data = io.read_data_2byte(SRC_DECRYPTED_('im43.bmp'))
+        key = 2318
+        MATRIX_2x2 = [[0xb, 0x4],[0xe, 0xd]]
+        mod = 0b10011
+        n = 4
+
+        aes = AES(key)
+        aes.column_Matrix = numeric_matrix_to_str_mx(MATRIX_2x2)
+        aes.column_InvMatrix = numeric_matrix_to_str_mx(AES.inverse_matrix_2x2(MATRIX_2x2, mod, n))
+        ed = aes.encrypt_data(decrypted_data)
+
+        encrypted_data = io.read_data_2byte(SRC_ENCRYPTED_('im43_saes_c_all.bmp'))
+        self.assertEqual(ed, encrypted_data)
+        
 
 
 

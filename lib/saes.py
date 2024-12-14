@@ -89,6 +89,28 @@ class AES():
             # формируем маску для получения очередного бита в множителе
             mm += mm
         return product
+    
+
+    @staticmethod
+    def matrix_multiply(mat_a, mat_b, mod, n):
+        rows_a = len(mat_a)
+        cols_a = len(mat_a[0])
+        rows_b = len(mat_b)
+        cols_b = len(mat_b[0])
+
+        # Проверка на совместимость матриц
+        if cols_a != rows_b:
+            raise ValueError("Матрицы не могут быть перемножены")
+
+        # Результирующая матрица
+        result = [[0] * cols_b for _ in range(rows_a)]
+
+        for i in range(rows_a):
+            for j in range(cols_b):
+                for k in range(cols_a):
+                    result[i][j] ^= AES.gf_multiply_modular(mat_a[i][k], mat_b[k][j], mod, n)
+
+        return result
 
 
     def sbox(self, v):
