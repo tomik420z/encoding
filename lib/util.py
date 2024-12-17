@@ -14,6 +14,7 @@ def IsBmp(data):
 def FindSubsequence(sequence, subsequence):
     return [(i, i + len(subsequence)) for i in range(len(sequence)) if sequence[i:i + len(subsequence)] == subsequence]
 
+
 def numeric_matrix_to_str_mx(mx):
     ans = []
     for line in mx:
