@@ -1,20 +1,21 @@
-# 4. Расшифровать файл dd8_saes_ofb_c_all.bmp – зашифрованное
-# шифром S_AES изображение в формате bmp. Матрица для преобразования
-# MixColumns: [['5', '3'], ['2', 'c']]. Неприводимый многочлен: x^4+x^3+1. Режим
-# шифрования OFB. Ключ равен 12345. Вектор инициализации равен 5171.
-# Зашифровать, оставив первые 50 байт без изменения. 
+'''
+6. Расшифровать файл dd10_saes_cfb_c_all.bmp – зашифрованное
+шифром S_AES изображение в формате bmp. Матрица для преобразования
+MixColumns: [['7', 'd'], ['4', '5']]. Неприводимый многочлен: x^4+x+1. Режим
+шифрования CFB. Ключ равен 24545. Вектор инициализации равен 9165.
+Зашифровать, оставив первые 50 байт без изменения.
+'''
 
 from lib.saes import AES 
 import lib.read_write_file as io 
 from lib.local_path import SRC_ENCRYPTED_
 from lib.local_path import SRC_DECRYPTED_
-from lib.encryption_mode.ofb import decrypt_ofb
-from lib.util import numeric_matrix_to_str_mx
+from lib.encryption_mode.cfb import decrypt_cfb
 
-data = io.read_data_2byte(SRC_ENCRYPTED_('dd8_saes_ofb_c_all.bmp'))
-vi = 5171
-key = 12345
-MATRIX_2x2 = [[0x5, 0x3],[0x2, 0xc]]
+data = io.read_data_2byte(SRC_ENCRYPTED_('dd10_saes_cfb_c_all.bmp'))
+vi = 9165
+key = 24545
+MATRIX_2x2 = [[0x7, 0xd],[0x4, 0x5]]
 mod = 0b11001
 n = 4
 
@@ -39,6 +40,6 @@ aes.set_modulus(mod)
 def decrypted_saes(block):
     return aes.encrypt(block)
 
-decrypted_data = decrypt_ofb(data, decrypted_saes, vi)    
+decrypted_data = decrypt_cfb(data, decrypted_saes, vi)    
 print(decrypted_data[:3])
-io.write_data_2byte(SRC_DECRYPTED_('dd8_saes_ofb_c_out.bmp'), decrypted_data)
+io.write_data_2byte(SRC_DECRYPTED_('dd10_saes_cfb_c_out.bmp'), decrypted_data)

@@ -8,14 +8,14 @@ from lib.saes import AES
 import lib.read_write_file as io 
 from lib.local_path import SRC_ENCRYPTED_
 from lib.local_path import SRC_DECRYPTED_
-from lib.encryption_mode.ctr import decrypt_ctr
+from lib.encryption_mode.ctr import decrypt_ctr_2_bytes
 from lib.util import numeric_matrix_to_str_mx
 
 data = io.read_data_2byte(SRC_ENCRYPTED_('dd12_saes_ctr_c_all.bmp'))
 vi = 23184
 key = 2645
 MATRIX_2x2 = [[0x7, 0x3],[0x2, 0xe]]
-mod = 0b11001
+mod = 0b10011
 n = 4
 
 # for k1 in range(0, 16):
@@ -32,13 +32,13 @@ n = 4
 
 # #-----------------------------------------------------------
 aes = AES(key)
-aes.column_Matrix = numeric_matrix_to_str_mx(MATRIX_2x2)
-aes.column_InvMatrix = numeric_matrix_to_str_mx(AES.inverse_matrix_2x2(MATRIX_2x2, mod, n))
-aes.modulus = mod
+aes.column_Matrix = MATRIX_2x2
+aes.column_InvMatrix = AES.inverse_matrix_2x2(MATRIX_2x2, mod, n)
+aes.set_modulus(mod)
 
 def decrypted_saes(block):
     return aes.encrypt(block)
 
-decrypted_data = decrypt_ctr(data[:3], decrypted_saes, vi)    
+decrypted_data = decrypt_ctr_2_bytes(data, decrypted_saes, vi)    
 print(decrypted_data[:3])
 io.write_data_2byte(SRC_DECRYPTED_('dd12_saes_ctr_c_out.bmp'), decrypted_data)

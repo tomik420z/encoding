@@ -36,11 +36,11 @@ n = 4
 aes = AES(key)
 aes.column_Matrix = numeric_matrix_to_str_mx(MATRIX_2x2)
 aes.column_InvMatrix = numeric_matrix_to_str_mx(AES.inverse_matrix_2x2(MATRIX_2x2, mod, n))
-aes.modulus = mod
+aes.set_modulus(mod)
 
 def decrypted_saes(block):
     return aes.decrypt(block)
 
-decrypted_data = decrypt_cbc(data[:3], decrypted_saes, vi)    
+decrypted_data = decrypt_cbc(data, decrypted_saes, vi)    
 print(decrypted_data[:3])
 io.write_data_2byte(SRC_DECRYPTED_('dd5_saes_cbc_c_out.bmp'), decrypted_data)

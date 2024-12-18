@@ -13,8 +13,11 @@ from lib.local_path import SRC_DECRYPTED_
 from lib.util import numeric_matrix_to_str_mx
 
 key = 2318
-MATRIX_2x2 = [[0xB, 0x4],
-              [0xE, 0xD]]
+MATRIX_2x2 = [
+    [0xB, 0x4],
+    [0xE, 0xD]
+]
+
 mod = 0b10011
 n = 4
 #-----------------------------------------------------------
@@ -24,7 +27,7 @@ data = io.read_data_2byte(SRC_ENCRYPTED_('im43_saes_c_all.bmp'))
 #     aes = AES(key)
 #     aes.column_Matrix = numeric_matrix_to_str_mx(MATRIX_2x2)
 #     aes.column_InvMatrix = numeric_matrix_to_str_mx(AES.inverse_matrix_2x2(MATRIX_2x2, mod, n))
-#     aes.modulus = mod
+#     aes.set_modulus(mod)
 #     decrypted_data = aes.decrypt_data(data[:2])
 #     if decrypted_data[0] == 19778:
 #         print(mod) 
@@ -33,7 +36,7 @@ aes = AES(key)
 aes.column_Matrix = MATRIX_2x2
 aes.column_InvMatrix = AES.inverse_matrix_2x2(MATRIX_2x2, mod, n)
 print(aes.column_InvMatrix)
-decrypted_data = aes.decrypt_data(data[:3])
+decrypted_data = aes.decrypt_data(data)
 print(decrypted_data[:3])  
 io.write_data_2byte(SRC_DECRYPTED_('im43_saes_c_out.bmp'), decrypted_data)
 

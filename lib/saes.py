@@ -1,16 +1,20 @@
 import numpy as np
 from BitVector import BitVector
+from util import modular_to_bit_vector
 
 class AES():
     S_Box = np.array([['9', '4', 'a', 'b'], ['d', '1', '8', '5'], ['6', '2', '0', '3'], ['c', 'e', 'f', '7']])
     S_InvBox = np.array([['a', '5', '9', 'b'], ['1', '7', '8', 'f'], ['6', '0', '2', '3'], ['c', '4', 'd', 'e']])
     RCON1 = int('10000000', 2)
     RCON2 = int('00110000', 2)
-    modulus = int('10011', 2)
+    modulus = BitVector(bitstring='10011')
     column_Matrix = list([[0x1, 0x4], [0x4, 0x1]])
     column_InvMatrix = list([[0x9, 0x2], [0x2, 0x9]])
     state_matrix = []
     
+
+    def set_modulus(self, number):
+        self.modulus = modular_to_bit_vector(number)
 
     @staticmethod
     def gf_divide(a, b):
@@ -41,39 +45,40 @@ class AES():
     def gf_mi(b, m, n):
         b_vec = BitVector(intVal=int(b))
         try:
-            result = b_vec.gf_MI(BitVector(bitstring=format(m, '04b')), n)
+            result = b_vec.gf_MI(m, n)
             return int(result)
         except:
             raise "Exception"
         
 
     @staticmethod
-    def inverse_matrix_2x2(matrix, m, n):
+    def inverse_matrix_2x2(matrix : list[list[int]], m : int, n : int):
         """Находит обратную матрицу размерности 2x2 в поле GF(2^4)."""
         a, b = matrix[0]
         c, d = matrix[1]
+        mod = BitVector(intVal=m)     
         
         # Находим детерминант
-        det = AES.gf_multiply_modular(a, d, m, n) ^ AES.gf_multiply_modular(b, c, m, n)
+        det = AES.gf_multiply_modular(a, d, mod, n) ^ AES.gf_multiply_modular(b, c, mod, n)
 
         # Проверка на обратимость
-        det_inv = AES.gf_mi(det, m, n)
+        det_inv = AES.gf_mi(det, mod, n)
 
         # Вычисление элементов обратной матрицы
         a_inv = AES.gf_multiply_modular(
-            d, det_inv, m, n
+            d, det_inv, mod, n
         )
         
         b_inv = AES.gf_multiply_modular(
-            AES.gf_multiply_modular(b, det_inv, m, n) ^ (0b0), 1, m, n
+            AES.gf_multiply_modular(b, det_inv, mod, n) ^ (0b0), 1, mod, n
         )
         
         c_inv = AES.gf_multiply_modular(
-            AES.gf_multiply_modular(c, det_inv, m, n) ^ (0b0), 1, m, n
+            AES.gf_multiply_modular(c, det_inv, mod, n) ^ (0b0), 1, mod, n
         )
         
         d_inv = AES.gf_multiply_modular(
-            a, det_inv, m, n
+            a, det_inv, mod, n
         )
 
         return [[a_inv, b_inv], [c_inv, d_inv]]
@@ -138,7 +143,7 @@ class AES():
 
 
     @staticmethod
-    def gf_multiply_modular(a, b, mod, n):
+    def gf_multiply_modular(a, b, modular, n):
         """
         INPUTS
         a - полином (множимое)
@@ -151,7 +156,7 @@ class AES():
         a_vec = BitVector(intVal=int(a))
         b_vec = BitVector(intVal=int(b))
 
-        return a_vec.gf_multiply_modular(b_vec, BitVector(bitstring=format(mod, '04b')), n).int_val()
+        return a_vec.gf_multiply_modular(b_vec, modular, n).int_val()
 
 
     def __init__(self, key):
