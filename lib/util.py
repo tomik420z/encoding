@@ -42,3 +42,24 @@ def numeric_matrix_to_str_mx(mx):
     for line in mx:
         ans.append([str(el) for el in line])
     return ans
+
+
+def bound(bitfield_width):
+    return 1 << (bitfield_width - 1), (1 << bitfield_width) - 1
+
+
+def check_bit(number, i):
+    """
+    Проверяет, установлен ли i-й бит в числе.
+
+    Аргументы:
+        число: проверяемое число
+        i: индекс бита (начиная с 0)
+
+    Возвращает:
+        True, если бит установлен, иначе False
+    """
+
+    mask = 1 << i
+    return (number & mask) != 0
+
