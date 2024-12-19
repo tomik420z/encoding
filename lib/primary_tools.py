@@ -1,6 +1,5 @@
 import random
 import lib.util as util 
-# import util as util 
 import math
 
 
@@ -55,7 +54,7 @@ def primitive_roots(n):
 
 
 def inv_number(a, p):
-    return a ** (p - 2) % p
+    return (a ** (p - 2)) % p
 
 
 def find_p_2q_plus_1(bitfield_width):
@@ -162,3 +161,158 @@ def int_nums_2_bytes(bloks, block_size):
             c //= 256
     
     return data_in_bytes
+
+
+def crt(a, m_list : list[int]):
+    return [a % m for m in m_list]
+
+
+def extended_gcd(a, b):
+    if a == 0:
+        return b, 0, 1
+    gcd, x1, y1 = extended_gcd(b % a, a)
+    x = y1 - (b // a) * x1
+    y = x1
+    return gcd, x, y
+
+
+def mod_inverse(a, m):
+    gcd, x, _ = extended_gcd(a, m)
+    if gcd != 1:
+        raise ValueError("Inverse does not exist")
+    return x % m
+
+
+def crt_inv(a_m: list[int], m_list: list[int]):
+    total_product = 1
+    for m in m_list:
+        total_product *= m
+
+    result = 0
+    for a_i, m_i in zip(a_m, m_list):
+        partial_product = total_product // m_i
+        inverse = mod_inverse(partial_product, m_i)
+        result += a_i * partial_product * inverse
+
+    return result % total_product
+
+
+def crt_inv_for_prime(a_m: list[int], m_list: list[int]):
+    '''
+    можно использовать, если все числа из m_list -- простые 
+    оптимизированна для простых чисел crt_inv
+    '''
+    total_product = 1
+    for m in m_list:
+        total_product *= m
+
+    result = 0
+    for a_i, m_i in zip(a_m, m_list):
+        partial_product = total_product // m_i
+        inverse = inv_number(partial_product, m_i)
+        result += a_i * partial_product * inverse
+
+    return result % total_product
+
+
+def dlog(g, pub_key, p):
+    for x in range(p):
+        if pub_key == (g ** x) % p:
+            return x
+    return None
+
+
+def dlog_opt(g, pub_key, p):
+    # Вычисляем m = ceil(sqrt(p))
+    m = int(math.ceil(math.sqrt(p)))
+    
+    # Шаг младенца: вычисляем g^j mod p для j = 0, 1, ..., m-1
+    baby_steps = {}
+    for j in range(m):
+        baby_steps[pow(g, j, p)] = j
+    
+    # Шаг великана: вычисляем g^{-m} mod p
+    g_inv_m = pow(g, -m, p)  # Используем pow с отрицательным показателем для обратного
+    if g_inv_m == 0:
+        raise ValueError("g не имеет обратного по модулю p")
+    
+    # Шаг великана: вычисляем pub_key * (g^{-m})^i mod p для i = 0, 1, ..., m-1
+    current = pub_key
+    for i in range(m):
+        # Проверяем, есть ли current в baby_steps
+        if current in baby_steps:
+            return i * m + baby_steps[current]
+        # Обновляем current
+        current = (current * g_inv_m) % p
+    
+    # Если решения нет
+    return None
+
+def elgamal_encrypt(pub_key, g, p, m):
+    '''
+    pub_key = public key
+    g = primitive root
+    p = prime
+    message = number < p
+    '''
+    k = random.randint(1, p - 1)
+    c_1 = pow(g, k, p) 
+    c_2 = (m * pow(pub_key, k, p)) % p  
+    return c_1, c_2
+
+
+def elgamal_decrypt(pri_key, p, c1, c2):
+    return (mod_inverse(c1 ** pri_key, p) * c2) % p 
+    
+
+
+# # Пример использования
+# g = 3
+# pub_key = 8
+# p = 17
+# priv_key = baby_step_giant_step(g, pub_key, p)
+# print(f"Приватный ключ priv_key: {priv_key}")
+
+# def modular_exponentiation(base, exp, mod):
+#     """Возводит base в степень exp по модулю mod."""
+#     result = 1
+#     base = base % mod
+#     while exp > 0:
+#         if (exp % 2) == 1:  # Если exp нечетное
+#             result = (result * base) % mod
+#         exp = exp >> 1  # Делим exp на 2
+#         base = (base * base) % mod
+#     return result
+
+# def dlog_opt(g, pub_key, p):
+#     """Вычисляет дискретный логарифм pub_key = g^priv_key mod p."""
+#     """RETURN priv_key"""
+
+#     # Определяем m
+#     m = int(math.ceil(math.sqrt(p - 1)))
+
+#     # Шаг младенца
+#     baby_steps = {}
+#     for j in range(m):
+#         value = modular_exponentiation(g, j, p)
+#         baby_steps[value] = j
+
+#     # Шаг великана
+#     g_inv_m = modular_exponentiation(g, -m, p)  # g^(-m) mod p
+#     current = pub_key
+
+#     for i in range(m):
+#         if current in baby_steps:
+#             # Найдено совпадение
+#             return i * m + baby_steps[current]
+#         current = (current * g_inv_m) % p
+
+#     return None  # Если логарифм не найден
+
+    # M = 1
+    # for m_curr in m_list:
+    #     M *= m_curr 
+
+    # inv_list = [inv_number(a, m_curr) for m_curr in m_list]
+    # list_c = [curr_m * curr_inv for curr_m, curr_inv in zip(m_list, inv_list)]
+    
