@@ -1,11 +1,11 @@
 import unittest
 import random
-from local_path import SRC_DECRYPTED_
-from local_path import SRC_ENCRYPTED_
-import read_write_file as io
-from util import numeric_matrix_to_str_mx
-from util import modular_to_bit_vector
-from saes import AES
+from lib.local_path import SRC_DECRYPTED_
+from lib.local_path import SRC_ENCRYPTED_
+import lib.read_write_file as io
+from lib.util import numeric_matrix_to_str_mx
+from lib.util import modular_to_bit_vector
+from lib.saes import AES
 
 class TestAES(unittest.TestCase):
 

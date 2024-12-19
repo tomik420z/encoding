@@ -1,6 +1,6 @@
 import unittest
-import primary_tools as pt
-import miller_rabin as mr
+import lib.primary_tools as pt
+import lib.miller_rabin as mr
 
 class TestPrimary(unittest.TestCase):
     def test_euler(self):

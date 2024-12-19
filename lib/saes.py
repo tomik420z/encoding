@@ -1,6 +1,6 @@
 import numpy as np
 from BitVector import BitVector
-from util import modular_to_bit_vector
+from lib.util import modular_to_bit_vector
 
 class AES():
     S_Box = np.array([['9', '4', 'a', 'b'], ['d', '1', '8', '5'], ['6', '2', '0', '3'], ['c', 'e', 'f', '7']])

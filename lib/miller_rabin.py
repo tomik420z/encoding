@@ -1,5 +1,5 @@
 import random
-import util
+import lib.util as util
 
 def rabin_miller(n):
     # Returns True if num is a prime number.
